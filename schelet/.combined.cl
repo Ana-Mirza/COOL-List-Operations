@@ -1,4 +1,125 @@
-(*******************************
+class List {
+    add(o : Object) : List {{
+        (new Cons).init(o, self);
+    }};
+
+    hd() : Object { abort() };
+
+    tl() : List {{ abort(); self; }};
+
+    toString():String {
+        ""
+    };
+
+    toStringInner():String {
+        ""
+    };
+
+    isNil() : Bool { true };
+};
+
+class Cons inherits List {
+
+    (* TODO: store data *)
+    hd : Object;
+    tl : List;
+
+    car : Int;
+    cdr : List;
+
+    hd() : Object { hd };
+
+    tl() : List { tl };
+
+    init(h : Object, t : List) : List {
+        {
+            hd <- h;
+            tl <- t;
+            self;
+        }
+    };
+
+    isNil() : Bool { false };
+
+    toStringInner():String {
+        let str : String <- "" in 
+        {
+            case hd of
+            int : Int => str <- "Int(".concat("int").concat(")");
+            str : String => str <- "String(".concat(str).concat(")");
+            product : Product => str <- product.toString();
+            rank : Rank => str <- rank.toString();
+            esac;
+
+            if tl.isNil() then str else str.concat(", ").concat(tl.toStringInner()) fi;
+        }
+    };
+
+    toString():String {{
+        -- "[TODO: implement me]"
+        let str : String <- "" in {
+        -- while hd.type_name() = "Cons" loop { 
+            case hd of
+            l : Cons => {str.concat("[ ".concat(l.toStringInner()).concat(" ]\n")).concat(tl.toString()); };
+            esac;
+        -- } pool; 
+        -- str;
+        };
+    }};
+
+    merge(other : List):SELF_TYPE {
+        self (* TODO *)
+    };
+
+    filterBy():SELF_TYPE {
+        self (* TODO *)
+    };
+
+    sortBy():SELF_TYPE {
+        self (* TODO *)
+    };
+};
+class Main inherits IO{
+    lists : List <- new List;
+    looping : Bool <- true;
+    somestr : String;
+
+    load(): Object {{
+        let list : List <- new List,
+            stringTokenizer : StringTokenizer,
+            readLine : Bool <- true,
+            objectFactory : ObjectFactory in {
+
+            while readLine loop {
+                somestr <- in_string();
+
+                -- build list
+                if (somestr = "END") then readLine <- false else {
+                    stringTokenizer <- new StringTokenizer.init(somestr);
+                    objectFactory <- new ObjectFactory.build(stringTokenizer);
+                    list <- list.add(objectFactory.getObject());
+                }
+                fi;
+            } pool;
+            list;
+        };
+    }};
+
+    main():Object {
+        while looping loop {
+            out_string("Enter command: ");
+            somestr <- in_string();
+            if (somestr = "help") then { out_string("load print merge filterBy sortBy".concat("\n")); } else 
+            if (somestr = "load") then { lists <- lists.add(self.load()); } else
+            if (somestr = "print") then out_string(lists.toString()) else
+            if (somestr = "merge") then { out_string("merge\n"); } else
+            if (somestr = "filterBy") then { out_string("filterBy\n"); } else
+            if (somestr = "sortBy") then { out_string("sortBy\n"); } else
+            abort()
+            fi fi fi fi fi fi;
+        } pool
+    };
+};(*******************************
  *** Classes Product-related ***
  *******************************)
 class Product {
@@ -233,3 +354,13 @@ numbers are handled correctly.
     };
 
 };
+(* Think of these as abstract classes *)
+class Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {0};
+};
+
+class Filter {
+    filter(o : Object):Bool {true};
+};
+
+(* TODO: implement specified comparators and filters*)
