@@ -187,6 +187,16 @@ class Corporal inherits Private {};
 class Sergent inherits Corporal {};
 
 class Officer inherits Sergent {};
+(* Think of these as abstract classes *)
+class Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {0};
+};
+
+class Filter {
+    filter(o : Object):Bool {true};
+};
+
+(* TODO: implement specified comparators and filters*)
 
 (*******************************
  *** Classes Utils ***
@@ -354,13 +364,3 @@ numbers are handled correctly.
     };
 
 };
-(* Think of these as abstract classes *)
-class Comparator {
-    compareTo(o1 : Object, o2 : Object):Int {0};
-};
-
-class Filter {
-    filter(o : Object):Bool {true};
-};
-
-(* TODO: implement specified comparators and filters*)
