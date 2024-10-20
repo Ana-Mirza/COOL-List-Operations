@@ -64,9 +64,9 @@ class ObjectFactory {
         let type : String in {
             type <- stringTokenizer.nextElem();
             if type = "Soda" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Coffee" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Laptop" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Router" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem()));  } else
+            if type = "Coffee" then { obj <- new Coffee.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
+            if type = "Laptop" then { obj <- new Laptop.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
+            if type = "Router" then { obj <- new Router.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem()));  } else
             if type = "Private" then { obj <- new Private.init(stringTokenizer.nextElem()); } else
             if type = "Corporal" then { obj <- new Corporal.init(stringTokenizer.nextElem()); } else
             if type = "Sergent" then { obj <- new Sergent.init(stringTokenizer.nextElem()); } else

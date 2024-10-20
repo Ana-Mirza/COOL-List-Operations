@@ -1,4 +1,6 @@
 class List {
+    len : Int <- 0;
+
     add(o : Object) : List {{
         (new Cons).init(o, self);
     }};
@@ -16,16 +18,29 @@ class List {
     };
 
     isNil() : Bool { true };
+
+    append(list : List) : List {
+        list
+    };
+
+    reverse() : List { { self; } };
+
+    getLen() : Int { len };
+
+    setLen(num : Int) : SELF_TYPE {{
+        len <- num;
+        self;
+    }};
+
+    merge(str : String) : List {
+        self
+    };
 };
 
 class Cons inherits List {
 
-    (* TODO: store data *)
     hd : Object;
     tl : List;
-
-    car : Int;
-    cdr : List;
 
     hd() : Object { hd };
 
@@ -37,6 +52,14 @@ class Cons inherits List {
             tl <- t;
             self;
         }
+    };
+
+    append(list : List) : List {{
+        tl.append(list).add(hd);
+    }};
+
+    reverse() : List {
+        tl.reverse().append(new List.add(hd))
     };
 
     isNil() : Bool { false };
@@ -58,18 +81,19 @@ class Cons inherits List {
     toString():String {{
         -- "[TODO: implement me]"
         let str : String <- "" in {
-        -- while hd.type_name() = "Cons" loop { 
-            case hd of
-            l : Cons => {str.concat("[ ".concat(l.toStringInner()).concat(" ]\n")).concat(tl.toString()); };
-            esac;
-        -- } pool; 
-        -- str;
+            str.concat("[ ".concat(self.toStringInner()).concat(" ]\n"));
         };
     }};
 
-    merge(other : List):SELF_TYPE {
-        self (* TODO *)
-    };
+    merge(str : String): List {{
+        -- self (* TODO *)
+        let stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
+            cmd : String <- stringTokenizer.nextElem(),
+            index1 : String <- stringTokenizer.nextElem(),
+            index2 : String <- stringTokenizer.nextElem() in {
+            self;
+        };
+    }};
 
     filterBy():SELF_TYPE {
         self (* TODO *)

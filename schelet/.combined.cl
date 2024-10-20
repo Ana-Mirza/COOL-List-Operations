@@ -1,4 +1,6 @@
 class List {
+    len : Int <- 0;
+
     add(o : Object) : List {{
         (new Cons).init(o, self);
     }};
@@ -16,16 +18,29 @@ class List {
     };
 
     isNil() : Bool { true };
+
+    append(list : List) : List {
+        list
+    };
+
+    reverse() : List { { self; } };
+
+    getLen() : Int { len };
+
+    setLen(num : Int) : SELF_TYPE {{
+        len <- num;
+        self;
+    }};
+
+    merge(str : String) : List {
+        self
+    };
 };
 
 class Cons inherits List {
 
-    (* TODO: store data *)
     hd : Object;
     tl : List;
-
-    car : Int;
-    cdr : List;
 
     hd() : Object { hd };
 
@@ -37,6 +52,14 @@ class Cons inherits List {
             tl <- t;
             self;
         }
+    };
+
+    append(list : List) : List {{
+        tl.append(list).add(hd);
+    }};
+
+    reverse() : List {
+        tl.reverse().append(new List.add(hd))
     };
 
     isNil() : Bool { false };
@@ -58,18 +81,19 @@ class Cons inherits List {
     toString():String {{
         -- "[TODO: implement me]"
         let str : String <- "" in {
-        -- while hd.type_name() = "Cons" loop { 
-            case hd of
-            l : Cons => {str.concat("[ ".concat(l.toStringInner()).concat(" ]\n")).concat(tl.toString()); };
-            esac;
-        -- } pool; 
-        -- str;
+            str.concat("[ ".concat(self.toStringInner()).concat(" ]\n"));
         };
     }};
 
-    merge(other : List):SELF_TYPE {
-        self (* TODO *)
-    };
+    merge(str : String): List {{
+        -- self (* TODO *)
+        let stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
+            cmd : String <- stringTokenizer.nextElem(),
+            index1 : String <- stringTokenizer.nextElem(),
+            index2 : String <- stringTokenizer.nextElem() in {
+            self;
+        };
+    }};
 
     filterBy():SELF_TYPE {
         self (* TODO *)
@@ -84,7 +108,7 @@ class Main inherits IO{
     looping : Bool <- true;
     somestr : String;
 
-    load(): Object {{
+    load(): List {{
         let list : List <- new List,
             stringTokenizer : StringTokenizer,
             readLine : Bool <- true,
@@ -93,7 +117,7 @@ class Main inherits IO{
             while readLine loop {
                 somestr <- in_string();
 
-                -- build list
+                -- build list with input objects
                 if (somestr = "END") then readLine <- false else {
                     stringTokenizer <- new StringTokenizer.init(somestr);
                     objectFactory <- new ObjectFactory.build(stringTokenizer);
@@ -101,7 +125,44 @@ class Main inherits IO{
                 }
                 fi;
             } pool;
-            list;
+            new List.add(list.reverse());
+        };
+    }};
+
+    print(str : String): String {{
+        let stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
+            command : String <- stringTokenizer.nextElem(),
+            index : Int,
+            str : String <- "",
+            i : Int <- 0,
+            ls : List in {
+            if stringTokenizer.hasMoreElem() then {
+                -- print list at given index
+                index <- new A2I.a2i(stringTokenizer.nextElem()) - 1;
+                out_string("index = ".concat(new A2I.i2a(index)).concat(" length = ".concat(new A2I.i2a(lists.getLen()).concat("\n"))));
+
+                -- TO DO: check index
+                ls <- lists;
+                while 0 < index loop {
+                    index <- index - 1;
+                    ls <- ls.tl();
+                } pool;
+
+                case ls.hd() of
+                l : Cons => {str <- str.concat(l.toString()); };
+                esac;
+                str;
+            } else { -- print all lists
+                ls <- lists;
+                while not ls.isNil() loop {
+                    i <- i + 1;
+                    case ls.hd() of
+                    l : Cons => {str <- str.concat(new A2I.i2a(i)).concat(". ").concat(l.toString()); };
+                    esac;
+                    ls <- ls.tl();
+                } pool;
+                str;
+            } fi;
         };
     }};
 
@@ -110,16 +171,17 @@ class Main inherits IO{
             out_string("Enter command: ");
             somestr <- in_string();
             if (somestr = "help") then { out_string("load print merge filterBy sortBy".concat("\n")); } else 
-            if (somestr = "load") then { lists <- lists.add(self.load()); } else
-            if (somestr = "print") then out_string(lists.toString()) else
-            if (somestr = "merge") then { out_string("merge\n"); } else
+            if (somestr = "load") then { lists <- lists.append(self.load()); lists.setLen(lists.getLen() + 1); } else
+            if (new StringTokenizer.init(somestr).nextElem() = "print") then out_string(self.print(somestr)) else
+            if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr); } else
             if (somestr = "filterBy") then { out_string("filterBy\n"); } else
             if (somestr = "sortBy") then { out_string("sortBy\n"); } else
             abort()
             fi fi fi fi fi fi;
         } pool
     };
-};(*******************************
+};
+(*******************************
  *** Classes Product-related ***
  *******************************)
 class Product {
@@ -137,7 +199,6 @@ class Product {
     getprice():Int{ price * 119 / 100 };
 
     toString():String {
-        -- "TODO: implement me"
         self.type_name().concat("(").concat(name).concat(",").concat(model).concat(")")
     };
 };
@@ -253,9 +314,9 @@ class ObjectFactory {
         let type : String in {
             type <- stringTokenizer.nextElem();
             if type = "Soda" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Coffee" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Laptop" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Router" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem()));  } else
+            if type = "Coffee" then { obj <- new Coffee.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
+            if type = "Laptop" then { obj <- new Laptop.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
+            if type = "Router" then { obj <- new Router.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem()));  } else
             if type = "Private" then { obj <- new Private.init(stringTokenizer.nextElem()); } else
             if type = "Corporal" then { obj <- new Corporal.init(stringTokenizer.nextElem()); } else
             if type = "Sergent" then { obj <- new Sergent.init(stringTokenizer.nextElem()); } else

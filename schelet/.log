@@ -1,2 +1,10 @@
-Enter command: Enter command: [ Soda(a,a), Officer(luke), Private(Private) ]
-Enter command: abort
+Enter command: Enter command: index = 0 length = 1
+[ Private(mark) ]
+Enter command: 1. [ Private(mark) ]
+Enter command: Enter command: 1. [ Private(mark) ]
+2. [ Coffee(a,a) ]
+Enter command: index = 1 length = 1
+[ Coffee(a,a) ]
+Enter command: index = 0 length = 1
+[ Private(mark) ]
+Enter command: ERROR: 0: Exception: String.substr out of range
