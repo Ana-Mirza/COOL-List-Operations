@@ -88,6 +88,7 @@ class Cons inherits List {
             case hd of
             int : Int => str <- "Int(".concat("int").concat(")");
             string : String => str <- "String(".concat(string).concat(")");
+            bool : Bool => { str <- "Bool("; if bool then str <- str.concat("true") else str <- str.concat("false") fi; str <- str.concat(")"); };
             product : Product => str <- product.toString();
             rank : Rank => str <- rank.toString();
             esac;

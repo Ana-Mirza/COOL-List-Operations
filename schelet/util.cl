@@ -147,9 +147,10 @@ class ObjectFactory {
             if type = "Officer" then obj <- new Officer.init(stringTokenizer.nextElem()) else
             if type = "String" then obj <- stringTokenizer.nextElem() else
             if type = "Int" then obj <- new A2I.a2i(stringTokenizer.nextElem()) else
+            if type = "Bool" then { str <- stringTokenizer.nextElem(); if str = "true" then obj <- true else { if str = "false" then obj <- false else abort() fi; } fi; } else
             -- if type = "Bool" then { str <- stringTokenizer.nextElem(); if str = "true" then obj <- true else {if str = "false" then obj <- false else abort() fi; }; } else
             abort()
-            fi fi fi fi fi fi fi fi fi fi;
+            fi fi fi fi fi fi fi fi fi fi fi;
             self;
         }
     };

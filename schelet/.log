@@ -1,0 +1,2 @@
+1. [ Bool(true), String(a), Int(int), Bool(false), Int(int) ]
+ERROR: 0: Exception: String.substr out of range
