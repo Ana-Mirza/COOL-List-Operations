@@ -1,5 +1,4 @@
 class List {
-    len : Int <- 0;
 
     add(o : Object) : List {{
         (new Cons).init(o, self);
@@ -20,13 +19,6 @@ class List {
     };
 
     reverse() : List { { self; } };
-
-    getLen() : Int { len };
-
-    setLen(num : Int) : SELF_TYPE {{
-        len <- num;
-        self;
-    }};
 
     get(index : Int) : Object {{
         abort();
@@ -95,7 +87,7 @@ class Cons inherits List {
         {
             case hd of
             int : Int => str <- "Int(".concat("int").concat(")");
-            str : String => str <- "String(".concat(str).concat(")");
+            string : String => str <- "String(".concat(string).concat(")");
             product : Product => str <- product.toString();
             rank : Rank => str <- rank.toString();
             esac;

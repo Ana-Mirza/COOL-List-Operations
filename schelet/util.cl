@@ -30,20 +30,10 @@ class SamePriceFilter inherits Filter {
     filter(o : Object):Bool {{
         let specific_price : Int,
             generic_price : Int in {
-            
-            -- get generic price
+            -- get prices
             case o of
             product : Product => { generic_price <- product@Product.getprice(); specific_price <- product.getprice(); };
             esac;
-
-            -- get price with TVA
-            -- case o of
-            -- product : Edible => specific_price <- product.getprice();
-            -- product : Soda => specific_price <- product.getprice();
-            -- product : Coffee => specific_price <- product.getprice();
-            -- product : Laptop => specific_price <- product.getprice();
-            -- product : Router => specific_price <- product.getprice();
-            -- esac;
 
             specific_price = generic_price;
         };
@@ -75,7 +65,21 @@ class RankComparator inherits Comparator {
 };
 
 class AlphabeticComparator inherits Comparator {
-    compareTo(o1 : Object, o2 : Object):Int {0};  
+    compareTo(o1 : Object, o2 : Object):Int {{
+        case o1 of
+        str1 : String => {
+            case o2 of
+            str2 : String => { if str1.substr(0, 1) < str2.substr(0, 1) then 0 else {
+                if str2.substr(0, 1) < str1.substr(0, 1) then 1 else {
+                    if str2.substr(0, 1) = str1.substr(0, 1) then {
+                        if str1.length() = 1 then { if str2.length() = 1 then 0 else 0 fi; } else { if str2.length() = 1 then 1 else { self.compareTo(str1.substr(1, str1.length() - 1), str2.substr(1, str2.length() - 1)); } fi; } fi;
+                    } else 1 fi;
+                } fi; } fi;
+            };
+            esac;
+        };
+        esac;
+    }};  
 };
 
 (*******************************
@@ -130,7 +134,8 @@ class ObjectFactory {
 
     build(stringTokenizer : StringTokenizer): SELF_TYPE {
         -- create object
-        let type : String in {
+        let type : String,
+            str : String in {
             type <- stringTokenizer.nextElem();
             if type = "Soda" then obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
             if type = "Coffee" then obj <- new Coffee.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
@@ -140,8 +145,11 @@ class ObjectFactory {
             if type = "Corporal" then obj <- new Corporal.init(stringTokenizer.nextElem()) else
             if type = "Sergent" then obj <- new Sergent.init(stringTokenizer.nextElem()) else
             if type = "Officer" then obj <- new Officer.init(stringTokenizer.nextElem()) else
+            if type = "String" then obj <- stringTokenizer.nextElem() else
+            if type = "Int" then obj <- new A2I.a2i(stringTokenizer.nextElem()) else
+            -- if type = "Bool" then { str <- stringTokenizer.nextElem(); if str = "true" then obj <- true else {if str = "false" then obj <- false else abort() fi; }; } else
             abort()
-            fi fi fi fi fi fi fi fi;
+            fi fi fi fi fi fi fi fi fi fi;
             self;
         }
     };

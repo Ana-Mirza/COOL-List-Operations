@@ -8,7 +8,8 @@ class Main inherits IO{
         let list : List <- new List,
             stringTokenizer : StringTokenizer,
             readLine : Bool <- true,
-            objectFactory : ObjectFactory in {
+            objectFactory : ObjectFactory,
+            obj : Object in {
 
             while readLine loop {
                 somestr <- in_string();
@@ -17,7 +18,8 @@ class Main inherits IO{
                 if (somestr = "END") then readLine <- false else {
                     stringTokenizer <- new StringTokenizer.init(somestr);
                     objectFactory <- new ObjectFactory.build(stringTokenizer);
-                    list <- list.add(objectFactory.getObject());
+                    obj <- objectFactory.getObject();
+                    list <- list.add(obj);
                 }
                 fi;
             } pool;
@@ -101,18 +103,19 @@ class Main inherits IO{
         };
     }};
 
-    main():Object {
+    main():Object {{
+        lists <- lists.append(self.load());
         while looping loop {
-            out_string("Enter command: ");
+            -- out_string("Enter command: ");
             somestr <- in_string();
-            if (somestr = "help") then { out_string("load print merge filterBy sortBy".concat("\n")); } else 
-            if (somestr = "load") then { lists <- lists.append(self.load()); lists.setLen(lists.getLen() + 1); } else
+            if (somestr = "help") then out_string("load print merge filterBy sortBy".concat("\n")) else 
+            if (somestr = "load") then lists <- lists.append(self.load()) else
             if (new StringTokenizer.init(somestr).nextElem() = "print") then out_string(self.print(somestr)) else
             if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr, lists); } else
             if (new StringTokenizer.init(somestr).nextElem() = "filterBy") then { lists <- self.filter(somestr); } else
             if (new StringTokenizer.init(somestr).nextElem() = "sortBy") then { lists <- self.sort(somestr); } else
             abort()
             fi fi fi fi fi fi;
-        } pool
-    };
+        } pool;
+    }};
 };
