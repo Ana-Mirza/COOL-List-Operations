@@ -80,6 +80,27 @@ class Main inherits IO{
         };
     }};
 
+    sort(str: String) : List {{
+        let newList : Object,
+        stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
+        cmd : String <- stringTokenizer.nextElem(),
+        index : Int <- new A2I.a2i(stringTokenizer.nextElem()),
+        comparator : Comparator <- new ComparatorFactory.build(stringTokenizer.nextElem()).getObject(),
+        method : String <- stringTokenizer.nextElem() in {
+            -- get list at given index
+            newList <- lists.get(index);
+
+            -- sort list
+            case newList of
+            list : Cons => {
+                if method = "descendent" then newList <- list.sortBy(comparator, method).sortBy(comparator, method) else newList <- list.sortBy(comparator, method) fi;
+                };
+            esac;
+
+            lists <- lists.replace(index, newList);
+        };
+    }};
+
     main():Object {
         while looping loop {
             out_string("Enter command: ");
@@ -89,7 +110,7 @@ class Main inherits IO{
             if (new StringTokenizer.init(somestr).nextElem() = "print") then out_string(self.print(somestr)) else
             if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr, lists); } else
             if (new StringTokenizer.init(somestr).nextElem() = "filterBy") then { lists <- self.filter(somestr); } else
-            if (somestr = "sortBy") then { out_string("sortBy\n"); } else
+            if (new StringTokenizer.init(somestr).nextElem() = "sortBy") then { lists <- self.sort(somestr); } else
             abort()
             fi fi fi fi fi fi;
         } pool

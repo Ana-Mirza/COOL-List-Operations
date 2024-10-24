@@ -33,6 +33,11 @@ class List {
         self;
     }};
 
+    getMinIndex(comparator: Comparator) : Int {{
+        abort();
+        0;
+    }};
+
     replace(index: Int, obj : Object) : List {{
         if index = 1 then self.add(obj) else { abort(); self; } fi;
     }};
@@ -50,6 +55,8 @@ class List {
     filterBy(f : Filter): List {{
         self;
     }};
+
+    sortBy(comparator : Comparator, method : String) : List { self };
 };
 
 class Cons inherits List {
@@ -142,7 +149,35 @@ class Cons inherits List {
         if f.filter(hd) then tl.filterBy(f).add(hd) else tl.filterBy(f) fi
     };
 
-    sortBy():SELF_TYPE {
-        self (* TODO *)
-    };
+    getMinIndex(comparator : Comparator) : Int {{
+        let index : Int <- 1,
+            obj : Object <- self.hd(),
+            list : List <- self,
+            currIndex : Int <- 1 in {
+            
+            list <- list.tl();
+            while not list.isNil() loop {
+                currIndex <- currIndex + 1;
+                if comparator.compareTo(obj, list.hd()) = 0 then obj <- obj else {
+                    obj <- list.hd();
+                    index <- currIndex;
+                } fi;
+                list <- list.tl();
+            } pool;
+            index;
+        };
+    }};
+
+    sortBy(comparator : Comparator, method: String):List {{
+        let sortedList : List <- new List,
+        oldList : List <- self,
+        index : Int in {
+            while not oldList.isNil() loop {
+                index <- oldList.getMinIndex(comparator);
+                sortedList <- sortedList.add(oldList.get(index));
+                oldList <- oldList.remove(index);
+            } pool;
+            if method = "ascendent" then sortedList.reverse() else sortedList fi;
+        };
+    }};
 };

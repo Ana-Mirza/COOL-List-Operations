@@ -7,6 +7,7 @@ class Filter {
     filter(o : Object):Bool {true};
 };
 
+(* TODO: implement specified comparators and filters*)
 class ProductFilter inherits Filter {
     filter(o : Object):Bool {{
         case o of
@@ -27,11 +28,55 @@ class RankFilter inherits Filter {
 
 class SamePriceFilter inherits Filter {
     filter(o : Object):Bool {{
-        true;
+        let specific_price : Int,
+            generic_price : Int in {
+            
+            -- get generic price
+            case o of
+            product : Product => { generic_price <- product@Product.getprice(); specific_price <- product.getprice(); };
+            esac;
+
+            -- get price with TVA
+            -- case o of
+            -- product : Edible => specific_price <- product.getprice();
+            -- product : Soda => specific_price <- product.getprice();
+            -- product : Coffee => specific_price <- product.getprice();
+            -- product : Laptop => specific_price <- product.getprice();
+            -- product : Router => specific_price <- product.getprice();
+            -- esac;
+
+            specific_price = generic_price;
+        };
     }};
 };
 
-(* TODO: implement specified comparators and filters*)
+class PriceComparator inherits Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {{
+        case o1 of
+        n1 : Product => {
+            case o2 of
+            n2 : Product => if n1.getprice() <= n2.getprice() then 0 else 1 fi;
+            esac; };
+        n2 : Object => {abort(); 0;};
+        esac;
+    }};
+};
+
+class RankComparator inherits Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {{
+        case o1 of
+        n1 : Rank => {
+            case o2 of
+            n2 : Rank => if n1.getRank() <= n2.getRank() then 0 else 1 fi;
+            esac; };
+        n2 : Object => {abort(); 0;}; 
+        esac;
+    }};
+};
+
+class AlphabeticComparator inherits Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {0};  
+};
 
 (*******************************
  *** Classes Utils ***
@@ -120,6 +165,24 @@ class FilterFactory {
     }};
 
     getObject(): Filter { obj };
+};
+
+class ComparatorFactory {
+    obj: Comparator;
+
+    build(type : String): SELF_TYPE {{
+        -- create filter
+        let type : String <- type in {
+            if type = "PriceComparator" then obj <- new PriceComparator else
+            if type = "RankComparator" then obj <- new RankComparator else
+            if type = "AlphabeticComparator" then obj <- new AlphabeticComparator else
+            abort()
+            fi fi fi;
+            self;
+        };
+    }};
+
+    getObject(): Comparator { obj };
 };
 
 class A2I {

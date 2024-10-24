@@ -33,6 +33,11 @@ class List {
         self;
     }};
 
+    getMinIndex(comparator: Comparator) : Int {{
+        abort();
+        0;
+    }};
+
     replace(index: Int, obj : Object) : List {{
         if index = 1 then self.add(obj) else { abort(); self; } fi;
     }};
@@ -50,6 +55,8 @@ class List {
     filterBy(f : Filter): List {{
         self;
     }};
+
+    sortBy(comparator : Comparator, method : String) : List { self };
 };
 
 class Cons inherits List {
@@ -142,9 +149,37 @@ class Cons inherits List {
         if f.filter(hd) then tl.filterBy(f).add(hd) else tl.filterBy(f) fi
     };
 
-    sortBy():SELF_TYPE {
-        self (* TODO *)
-    };
+    getMinIndex(comparator : Comparator) : Int {{
+        let index : Int <- 1,
+            obj : Object <- self.hd(),
+            list : List <- self,
+            currIndex : Int <- 1 in {
+            
+            list <- list.tl();
+            while not list.isNil() loop {
+                currIndex <- currIndex + 1;
+                if comparator.compareTo(obj, list.hd()) = 0 then obj <- obj else {
+                    obj <- list.hd();
+                    index <- currIndex;
+                } fi;
+                list <- list.tl();
+            } pool;
+            index;
+        };
+    }};
+
+    sortBy(comparator : Comparator, method: String):List {{
+        let sortedList : List <- new List,
+        oldList : List <- self,
+        index : Int in {
+            while not oldList.isNil() loop {
+                index <- oldList.getMinIndex(comparator);
+                sortedList <- sortedList.add(oldList.get(index));
+                oldList <- oldList.remove(index);
+            } pool;
+            if method = "ascendent" then sortedList.reverse() else sortedList fi;
+        };
+    }};
 };
 class Main inherits IO{
     lists : List <- new List;
@@ -228,6 +263,27 @@ class Main inherits IO{
         };
     }};
 
+    sort(str: String) : List {{
+        let newList : Object,
+        stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
+        cmd : String <- stringTokenizer.nextElem(),
+        index : Int <- new A2I.a2i(stringTokenizer.nextElem()),
+        comparator : Comparator <- new ComparatorFactory.build(stringTokenizer.nextElem()).getObject(),
+        method : String <- stringTokenizer.nextElem() in {
+            -- get list at given index
+            newList <- lists.get(index);
+
+            -- sort list
+            case newList of
+            list : Cons => {
+                if method = "descendent" then newList <- list.sortBy(comparator, method).sortBy(comparator, method) else newList <- list.sortBy(comparator, method) fi;
+                };
+            esac;
+
+            lists <- lists.replace(index, newList);
+        };
+    }};
+
     main():Object {
         while looping loop {
             out_string("Enter command: ");
@@ -237,7 +293,7 @@ class Main inherits IO{
             if (new StringTokenizer.init(somestr).nextElem() = "print") then out_string(self.print(somestr)) else
             if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr, lists); } else
             if (new StringTokenizer.init(somestr).nextElem() = "filterBy") then { lists <- self.filter(somestr); } else
-            if (somestr = "sortBy") then { out_string("sortBy\n"); } else
+            if (new StringTokenizer.init(somestr).nextElem() = "sortBy") then { lists <- self.sort(somestr); } else
             abort()
             fi fi fi fi fi fi;
         } pool
@@ -298,18 +354,38 @@ class Rank {
         self;
     }};
 
+    getRank() : Int {
+        0
+    };
+
     toString():String {{
         self.type_name().concat("(").concat(name).concat(")");
     }};
 };
 
-class Private inherits Rank {};
+class Private inherits Rank {
+    getRank() : Int {
+        1
+    };
+};
 
-class Corporal inherits Private {};
+class Corporal inherits Private {
+    getRank() : Int {
+        2
+    };
+};
 
-class Sergent inherits Corporal {};
+class Sergent inherits Corporal {
+    getRank() : Int {
+        3
+    };
+};
 
-class Officer inherits Sergent {};
+class Officer inherits Sergent {
+    getRank() : Int {
+        4
+    };
+};
 (* Think of these as abstract classes *)
 class Comparator {
     compareTo(o1 : Object, o2 : Object):Int {0};
@@ -319,6 +395,7 @@ class Filter {
     filter(o : Object):Bool {true};
 };
 
+(* TODO: implement specified comparators and filters*)
 class ProductFilter inherits Filter {
     filter(o : Object):Bool {{
         case o of
@@ -339,11 +416,55 @@ class RankFilter inherits Filter {
 
 class SamePriceFilter inherits Filter {
     filter(o : Object):Bool {{
-        true;
+        let specific_price : Int,
+            generic_price : Int in {
+            
+            -- get generic price
+            case o of
+            product : Product => { generic_price <- product@Product.getprice(); specific_price <- product.getprice(); };
+            esac;
+
+            -- get price with TVA
+            -- case o of
+            -- product : Edible => specific_price <- product.getprice();
+            -- product : Soda => specific_price <- product.getprice();
+            -- product : Coffee => specific_price <- product.getprice();
+            -- product : Laptop => specific_price <- product.getprice();
+            -- product : Router => specific_price <- product.getprice();
+            -- esac;
+
+            specific_price = generic_price;
+        };
     }};
 };
 
-(* TODO: implement specified comparators and filters*)
+class PriceComparator inherits Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {{
+        case o1 of
+        n1 : Product => {
+            case o2 of
+            n2 : Product => if n1.getprice() <= n2.getprice() then 0 else 1 fi;
+            esac; };
+        n2 : Object => {abort(); 0;};
+        esac;
+    }};
+};
+
+class RankComparator inherits Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {{
+        case o1 of
+        n1 : Rank => {
+            case o2 of
+            n2 : Rank => if n1.getRank() <= n2.getRank() then 0 else 1 fi;
+            esac; };
+        n2 : Object => {abort(); 0;}; 
+        esac;
+    }};
+};
+
+class AlphabeticComparator inherits Comparator {
+    compareTo(o1 : Object, o2 : Object):Int {0};  
+};
 
 (*******************************
  *** Classes Utils ***
@@ -432,6 +553,24 @@ class FilterFactory {
     }};
 
     getObject(): Filter { obj };
+};
+
+class ComparatorFactory {
+    obj: Comparator;
+
+    build(type : String): SELF_TYPE {{
+        -- create filter
+        let type : String <- type in {
+            if type = "PriceComparator" then obj <- new PriceComparator else
+            if type = "RankComparator" then obj <- new RankComparator else
+            if type = "AlphabeticComparator" then obj <- new AlphabeticComparator else
+            abort()
+            fi fi fi;
+            self;
+        };
+    }};
+
+    getObject(): Comparator { obj };
 };
 
 class A2I {

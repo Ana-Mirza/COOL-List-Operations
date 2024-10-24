@@ -53,15 +53,35 @@ class Rank {
         self;
     }};
 
+    getRank() : Int {
+        0
+    };
+
     toString():String {{
         self.type_name().concat("(").concat(name).concat(")");
     }};
 };
 
-class Private inherits Rank {};
+class Private inherits Rank {
+    getRank() : Int {
+        1
+    };
+};
 
-class Corporal inherits Private {};
+class Corporal inherits Private {
+    getRank() : Int {
+        2
+    };
+};
 
-class Sergent inherits Corporal {};
+class Sergent inherits Corporal {
+    getRank() : Int {
+        3
+    };
+};
 
-class Officer inherits Sergent {};
+class Officer inherits Sergent {
+    getRank() : Int {
+        4
+    };
+};
