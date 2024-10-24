@@ -13,10 +13,6 @@ class List {
         ""
     };
 
-    toStringInner():String {
-        ""
-    };
-
     isNil() : Bool { true };
 
     append(list : List) : List {
@@ -32,9 +28,28 @@ class List {
         self;
     }};
 
-    merge(str : String) : List {
-        self
-    };
+    get(index : Int) : Object {{
+        abort();
+        self;
+    }};
+
+    replace(index: Int, obj : Object) : List {{
+        if index = 1 then self.add(obj) else { abort(); self; } fi;
+    }};
+
+    remove(index: Int) : List {{
+        abort();
+        self;
+    }};
+
+    merge(str : String, lists : List) : List {{
+        abort();
+        self;
+    }};
+
+    filterBy(f : Filter): List {{
+        self;
+    }};
 };
 
 class Cons inherits List {
@@ -54,6 +69,10 @@ class Cons inherits List {
         }
     };
 
+    replace(index: Int, obj : Object) : List {{
+        if index = 1 then tl.add(obj) else tl.replace(index - 1, obj).add(hd) fi;
+    }};
+
     append(list : List) : List {{
         tl.append(list).add(hd);
     }};
@@ -64,7 +83,7 @@ class Cons inherits List {
 
     isNil() : Bool { false };
 
-    toStringInner():String {
+    toString():String {
         let str : String <- "" in 
         {
             case hd of
@@ -74,29 +93,53 @@ class Cons inherits List {
             rank : Rank => str <- rank.toString();
             esac;
 
-            if tl.isNil() then str else str.concat(", ").concat(tl.toStringInner()) fi;
+            if tl.isNil() then str else str.concat(", ").concat(tl.toString()) fi;
         }
     };
 
-    toString():String {{
-        -- "[TODO: implement me]"
-        let str : String <- "" in {
-            str.concat("[ ".concat(self.toStringInner()).concat(" ]\n"));
-        };
+    get(index: Int) : Object {{
+        if index = 1 then hd else { tl.get(index - 1); } fi;
     }};
 
-    merge(str : String): List {{
-        -- self (* TODO *)
+    remove(index : Int) : List {{
+        if index = 1 then self.tl() else new List.add(hd).append(tl.remove(index - 1)) fi;
+    }};
+
+    merge(str : String, lists : List): List {{
         let stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
             cmd : String <- stringTokenizer.nextElem(),
-            index1 : String <- stringTokenizer.nextElem(),
-            index2 : String <- stringTokenizer.nextElem() in {
-            self;
+            index1 : Int,
+            index2 : Int,
+            list1 : Object,
+            list2 : Object,
+            ls : List <- lists,
+            newList : List in {
+
+            -- get the lists
+            index1 <- new A2I.a2i((stringTokenizer.nextElem()));
+            index2 <- new A2I.a2i((stringTokenizer.nextElem()));
+            list1 <- self.get(index1);
+            list2 <- self.get(index2);
+
+            -- merge the 2 lists
+            case list1 of
+            l : List => {
+                newList <- l;
+                case list2 of
+                l2 : List => newList <- newList.append(l2); 
+                esac;
+            };
+            esac;
+
+            -- remove the two lists and add them at the end 
+            ls <- lists;
+            ls <- ls.remove(new Util.max(index1, index2)).remove(new Util.min(index1, index2)).append(new List.add(newList));
+            ls;
         };
     }};
 
-    filterBy():SELF_TYPE {
-        self (* TODO *)
+    filterBy(f : Filter):List {
+        if f.filter(hd) then tl.filterBy(f).add(hd) else tl.filterBy(f) fi
     };
 
     sortBy():SELF_TYPE {
@@ -107,6 +150,7 @@ class Main inherits IO{
     lists : List <- new List;
     looping : Bool <- true;
     somestr : String;
+    stringTokenizer : StringTokenizer <- new StringTokenizer;
 
     load(): List {{
         let list : List <- new List,
@@ -131,7 +175,7 @@ class Main inherits IO{
 
     print(str : String): String {{
         let stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
-            command : String <- stringTokenizer.nextElem(),
+            cmd : String <- stringTokenizer.nextElem(),
             index : Int,
             str : String <- "",
             i : Int <- 0,
@@ -139,9 +183,7 @@ class Main inherits IO{
             if stringTokenizer.hasMoreElem() then {
                 -- print list at given index
                 index <- new A2I.a2i(stringTokenizer.nextElem()) - 1;
-                out_string("index = ".concat(new A2I.i2a(index)).concat(" length = ".concat(new A2I.i2a(lists.getLen()).concat("\n"))));
-
-                -- TO DO: check index
+                
                 ls <- lists;
                 while 0 < index loop {
                     index <- index - 1;
@@ -149,7 +191,7 @@ class Main inherits IO{
                 } pool;
 
                 case ls.hd() of
-                l : Cons => {str <- str.concat(l.toString()); };
+                l : List => {str <- str.concat("[ ").concat(l.toString()).concat(" ]\n"); };
                 esac;
                 str;
             } else { -- print all lists
@@ -157,12 +199,32 @@ class Main inherits IO{
                 while not ls.isNil() loop {
                     i <- i + 1;
                     case ls.hd() of
-                    l : Cons => {str <- str.concat(new A2I.i2a(i)).concat(". ").concat(l.toString()); };
+                    l : List => str <- str.concat(new A2I.i2a(i)).concat(". [ ").concat(l.toString().concat(" ]\n"));
                     esac;
                     ls <- ls.tl();
                 } pool;
                 str;
             } fi;
+        };
+    }};
+
+    filter(str: String) : List {{
+        let newList : Object,
+        stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
+        cmd : String <- stringTokenizer.nextElem(),
+        index : Int <- new A2I.a2i(stringTokenizer.nextElem()),
+        tmp : Int <- index,
+        f : Filter <- new FilterFactory.build(stringTokenizer.nextElem()).getObject() in {
+            -- get list at given index
+            newList <- lists.get(index);
+
+            -- filter list
+            case newList of
+            list : Cons => {
+                newList <- list.filterBy(f); }; 
+            esac;
+
+            lists <- lists.replace(index, newList);
         };
     }};
 
@@ -173,8 +235,8 @@ class Main inherits IO{
             if (somestr = "help") then { out_string("load print merge filterBy sortBy".concat("\n")); } else 
             if (somestr = "load") then { lists <- lists.append(self.load()); lists.setLen(lists.getLen() + 1); } else
             if (new StringTokenizer.init(somestr).nextElem() = "print") then out_string(self.print(somestr)) else
-            if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr); } else
-            if (somestr = "filterBy") then { out_string("filterBy\n"); } else
+            if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr, lists); } else
+            if (new StringTokenizer.init(somestr).nextElem() = "filterBy") then { lists <- self.filter(somestr); } else
             if (somestr = "sortBy") then { out_string("sortBy\n"); } else
             abort()
             fi fi fi fi fi fi;
@@ -257,6 +319,30 @@ class Filter {
     filter(o : Object):Bool {true};
 };
 
+class ProductFilter inherits Filter {
+    filter(o : Object):Bool {{
+        case o of
+        product : Product => true;
+        obj : Object => false;
+        esac;
+    }};
+};
+
+class RankFilter inherits Filter {
+    filter(o : Object):Bool {{
+        case o of
+        rank : Rank => true;
+        obj : Object => false;
+        esac;
+    }};
+};
+
+class SamePriceFilter inherits Filter {
+    filter(o : Object):Bool {{
+        true;
+    }};
+};
+
 (* TODO: implement specified comparators and filters*)
 
 (*******************************
@@ -313,14 +399,14 @@ class ObjectFactory {
         -- create object
         let type : String in {
             type <- stringTokenizer.nextElem();
-            if type = "Soda" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Coffee" then { obj <- new Coffee.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Laptop" then { obj <- new Laptop.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Router" then { obj <- new Router.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem()));  } else
-            if type = "Private" then { obj <- new Private.init(stringTokenizer.nextElem()); } else
-            if type = "Corporal" then { obj <- new Corporal.init(stringTokenizer.nextElem()); } else
-            if type = "Sergent" then { obj <- new Sergent.init(stringTokenizer.nextElem()); } else
-            if type = "Officer" then { obj <- new Officer.init(stringTokenizer.nextElem()); } else
+            if type = "Soda" then obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Coffee" then obj <- new Coffee.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Laptop" then obj <- new Laptop.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Router" then obj <- new Router.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Private" then obj <- new Private.init(stringTokenizer.nextElem()) else
+            if type = "Corporal" then obj <- new Corporal.init(stringTokenizer.nextElem()) else
+            if type = "Sergent" then obj <- new Sergent.init(stringTokenizer.nextElem()) else
+            if type = "Officer" then obj <- new Officer.init(stringTokenizer.nextElem()) else
             abort()
             fi fi fi fi fi fi fi fi;
             self;
@@ -328,6 +414,24 @@ class ObjectFactory {
     };
 
     getObject(): Object { obj };
+};
+
+class FilterFactory {
+    obj: Filter;
+
+    build(type : String): SELF_TYPE {{
+        -- create filter
+        let type : String <- type in {
+            if type = "ProductFilter" then obj <- new ProductFilter else
+            if type = "RankFilter" then obj <- new RankFilter else
+            if type = "SamePriceFilter" then obj <- new SamePriceFilter else
+            abort()
+            fi fi fi;
+            self;
+        };
+    }};
+
+    getObject(): Filter { obj };
 };
 
 class A2I {
@@ -424,4 +528,14 @@ numbers are handled correctly.
         fi
     };
 
+};
+
+class Util {
+    min(a : Int, b : Int) : Int {{
+        if a < b then a else b fi;
+    }};
+
+    max(a : Int, b : Int) : Int {{
+        if a < b then b else a fi;
+    }};
 };

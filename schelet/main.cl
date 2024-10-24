@@ -2,6 +2,7 @@ class Main inherits IO{
     lists : List <- new List;
     looping : Bool <- true;
     somestr : String;
+    stringTokenizer : StringTokenizer <- new StringTokenizer;
 
     load(): List {{
         let list : List <- new List,
@@ -26,7 +27,7 @@ class Main inherits IO{
 
     print(str : String): String {{
         let stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
-            command : String <- stringTokenizer.nextElem(),
+            cmd : String <- stringTokenizer.nextElem(),
             index : Int,
             str : String <- "",
             i : Int <- 0,
@@ -34,9 +35,7 @@ class Main inherits IO{
             if stringTokenizer.hasMoreElem() then {
                 -- print list at given index
                 index <- new A2I.a2i(stringTokenizer.nextElem()) - 1;
-                out_string("index = ".concat(new A2I.i2a(index)).concat(" length = ".concat(new A2I.i2a(lists.getLen()).concat("\n"))));
-
-                -- TO DO: check index
+                
                 ls <- lists;
                 while 0 < index loop {
                     index <- index - 1;
@@ -44,7 +43,7 @@ class Main inherits IO{
                 } pool;
 
                 case ls.hd() of
-                l : Cons => {str <- str.concat(l.toString()); };
+                l : List => {str <- str.concat("[ ").concat(l.toString()).concat(" ]\n"); };
                 esac;
                 str;
             } else { -- print all lists
@@ -52,12 +51,32 @@ class Main inherits IO{
                 while not ls.isNil() loop {
                     i <- i + 1;
                     case ls.hd() of
-                    l : Cons => {str <- str.concat(new A2I.i2a(i)).concat(". ").concat(l.toString()); };
+                    l : List => str <- str.concat(new A2I.i2a(i)).concat(". [ ").concat(l.toString().concat(" ]\n"));
                     esac;
                     ls <- ls.tl();
                 } pool;
                 str;
             } fi;
+        };
+    }};
+
+    filter(str: String) : List {{
+        let newList : Object,
+        stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
+        cmd : String <- stringTokenizer.nextElem(),
+        index : Int <- new A2I.a2i(stringTokenizer.nextElem()),
+        tmp : Int <- index,
+        f : Filter <- new FilterFactory.build(stringTokenizer.nextElem()).getObject() in {
+            -- get list at given index
+            newList <- lists.get(index);
+
+            -- filter list
+            case newList of
+            list : Cons => {
+                newList <- list.filterBy(f); }; 
+            esac;
+
+            lists <- lists.replace(index, newList);
         };
     }};
 
@@ -68,8 +87,8 @@ class Main inherits IO{
             if (somestr = "help") then { out_string("load print merge filterBy sortBy".concat("\n")); } else 
             if (somestr = "load") then { lists <- lists.append(self.load()); lists.setLen(lists.getLen() + 1); } else
             if (new StringTokenizer.init(somestr).nextElem() = "print") then out_string(self.print(somestr)) else
-            if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr); } else
-            if (somestr = "filterBy") then { out_string("filterBy\n"); } else
+            if (new StringTokenizer.init(somestr).nextElem() = "merge") then { lists <- lists.merge(somestr, lists); } else
+            if (new StringTokenizer.init(somestr).nextElem() = "filterBy") then { lists <- self.filter(somestr); } else
             if (somestr = "sortBy") then { out_string("sortBy\n"); } else
             abort()
             fi fi fi fi fi fi;

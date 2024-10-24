@@ -13,10 +13,6 @@ class List {
         ""
     };
 
-    toStringInner():String {
-        ""
-    };
-
     isNil() : Bool { true };
 
     append(list : List) : List {
@@ -32,9 +28,28 @@ class List {
         self;
     }};
 
-    merge(str : String) : List {
-        self
-    };
+    get(index : Int) : Object {{
+        abort();
+        self;
+    }};
+
+    replace(index: Int, obj : Object) : List {{
+        if index = 1 then self.add(obj) else { abort(); self; } fi;
+    }};
+
+    remove(index: Int) : List {{
+        abort();
+        self;
+    }};
+
+    merge(str : String, lists : List) : List {{
+        abort();
+        self;
+    }};
+
+    filterBy(f : Filter): List {{
+        self;
+    }};
 };
 
 class Cons inherits List {
@@ -54,6 +69,10 @@ class Cons inherits List {
         }
     };
 
+    replace(index: Int, obj : Object) : List {{
+        if index = 1 then tl.add(obj) else tl.replace(index - 1, obj).add(hd) fi;
+    }};
+
     append(list : List) : List {{
         tl.append(list).add(hd);
     }};
@@ -64,7 +83,7 @@ class Cons inherits List {
 
     isNil() : Bool { false };
 
-    toStringInner():String {
+    toString():String {
         let str : String <- "" in 
         {
             case hd of
@@ -74,29 +93,53 @@ class Cons inherits List {
             rank : Rank => str <- rank.toString();
             esac;
 
-            if tl.isNil() then str else str.concat(", ").concat(tl.toStringInner()) fi;
+            if tl.isNil() then str else str.concat(", ").concat(tl.toString()) fi;
         }
     };
 
-    toString():String {{
-        -- "[TODO: implement me]"
-        let str : String <- "" in {
-            str.concat("[ ".concat(self.toStringInner()).concat(" ]\n"));
-        };
+    get(index: Int) : Object {{
+        if index = 1 then hd else { tl.get(index - 1); } fi;
     }};
 
-    merge(str : String): List {{
-        -- self (* TODO *)
+    remove(index : Int) : List {{
+        if index = 1 then self.tl() else new List.add(hd).append(tl.remove(index - 1)) fi;
+    }};
+
+    merge(str : String, lists : List): List {{
         let stringTokenizer : StringTokenizer <- new StringTokenizer.init(str),
             cmd : String <- stringTokenizer.nextElem(),
-            index1 : String <- stringTokenizer.nextElem(),
-            index2 : String <- stringTokenizer.nextElem() in {
-            self;
+            index1 : Int,
+            index2 : Int,
+            list1 : Object,
+            list2 : Object,
+            ls : List <- lists,
+            newList : List in {
+
+            -- get the lists
+            index1 <- new A2I.a2i((stringTokenizer.nextElem()));
+            index2 <- new A2I.a2i((stringTokenizer.nextElem()));
+            list1 <- self.get(index1);
+            list2 <- self.get(index2);
+
+            -- merge the 2 lists
+            case list1 of
+            l : List => {
+                newList <- l;
+                case list2 of
+                l2 : List => newList <- newList.append(l2); 
+                esac;
+            };
+            esac;
+
+            -- remove the two lists and add them at the end 
+            ls <- lists;
+            ls <- ls.remove(new Util.max(index1, index2)).remove(new Util.min(index1, index2)).append(new List.add(newList));
+            ls;
         };
     }};
 
-    filterBy():SELF_TYPE {
-        self (* TODO *)
+    filterBy(f : Filter):List {
+        if f.filter(hd) then tl.filterBy(f).add(hd) else tl.filterBy(f) fi
     };
 
     sortBy():SELF_TYPE {

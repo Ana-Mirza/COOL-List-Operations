@@ -7,6 +7,30 @@ class Filter {
     filter(o : Object):Bool {true};
 };
 
+class ProductFilter inherits Filter {
+    filter(o : Object):Bool {{
+        case o of
+        product : Product => true;
+        obj : Object => false;
+        esac;
+    }};
+};
+
+class RankFilter inherits Filter {
+    filter(o : Object):Bool {{
+        case o of
+        rank : Rank => true;
+        obj : Object => false;
+        esac;
+    }};
+};
+
+class SamePriceFilter inherits Filter {
+    filter(o : Object):Bool {{
+        true;
+    }};
+};
+
 (* TODO: implement specified comparators and filters*)
 
 (*******************************
@@ -63,14 +87,14 @@ class ObjectFactory {
         -- create object
         let type : String in {
             type <- stringTokenizer.nextElem();
-            if type = "Soda" then { obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Coffee" then { obj <- new Coffee.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Laptop" then { obj <- new Laptop.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())); } else
-            if type = "Router" then { obj <- new Router.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem()));  } else
-            if type = "Private" then { obj <- new Private.init(stringTokenizer.nextElem()); } else
-            if type = "Corporal" then { obj <- new Corporal.init(stringTokenizer.nextElem()); } else
-            if type = "Sergent" then { obj <- new Sergent.init(stringTokenizer.nextElem()); } else
-            if type = "Officer" then { obj <- new Officer.init(stringTokenizer.nextElem()); } else
+            if type = "Soda" then obj <- new Soda.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Coffee" then obj <- new Coffee.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Laptop" then obj <- new Laptop.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Router" then obj <- new Router.init(stringTokenizer.nextElem(), stringTokenizer.nextElem(), new A2I.a2i(stringTokenizer.nextElem())) else
+            if type = "Private" then obj <- new Private.init(stringTokenizer.nextElem()) else
+            if type = "Corporal" then obj <- new Corporal.init(stringTokenizer.nextElem()) else
+            if type = "Sergent" then obj <- new Sergent.init(stringTokenizer.nextElem()) else
+            if type = "Officer" then obj <- new Officer.init(stringTokenizer.nextElem()) else
             abort()
             fi fi fi fi fi fi fi fi;
             self;
@@ -78,6 +102,24 @@ class ObjectFactory {
     };
 
     getObject(): Object { obj };
+};
+
+class FilterFactory {
+    obj: Filter;
+
+    build(type : String): SELF_TYPE {{
+        -- create filter
+        let type : String <- type in {
+            if type = "ProductFilter" then obj <- new ProductFilter else
+            if type = "RankFilter" then obj <- new RankFilter else
+            if type = "SamePriceFilter" then obj <- new SamePriceFilter else
+            abort()
+            fi fi fi;
+            self;
+        };
+    }};
+
+    getObject(): Filter { obj };
 };
 
 class A2I {
@@ -174,4 +216,14 @@ numbers are handled correctly.
         fi
     };
 
+};
+
+class Util {
+    min(a : Int, b : Int) : Int {{
+        if a < b then a else b fi;
+    }};
+
+    max(a : Int, b : Int) : Int {{
+        if a < b then b else a fi;
+    }};
 };
