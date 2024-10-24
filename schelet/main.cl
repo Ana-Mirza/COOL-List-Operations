@@ -106,7 +106,6 @@ class Main inherits IO{
     main():Object {{
         lists <- lists.append(self.load());
         while looping loop {
-            -- out_string("Enter command: ");
             somestr <- in_string();
             if (somestr = "help") then out_string("load print merge filterBy sortBy".concat("\n")) else 
             if (somestr = "load") then lists <- lists.append(self.load()) else
