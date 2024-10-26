@@ -30,6 +30,11 @@ class List {
         0;
     }};
 
+    getMaxIndex(comparator: Comparator) : Int {{
+        abort();
+        0;
+    }};
+
     replace(index: Int, obj : Object) : List {{
         if index = 1 then self.add(obj) else { abort(); self; } fi;
     }};
@@ -152,7 +157,26 @@ class Cons inherits List {
             list <- list.tl();
             while not list.isNil() loop {
                 currIndex <- currIndex + 1;
-                if comparator.compareTo(obj, list.hd()) = 0 then obj <- obj else {
+                if comparator.compareTo(obj, list.hd()) = 2 then obj <- obj else {
+                    obj <- list.hd();
+                    index <- currIndex;
+                } fi;
+                list <- list.tl();
+            } pool;
+            index;
+        };
+    }};
+
+    getMaxIndex(comparator : Comparator) : Int {{
+        let index : Int <- 1,
+            obj : Object <- self.hd(),
+            list : List <- self,
+            currIndex : Int <- 1 in {
+            
+            list <- list.tl();
+            while not list.isNil() loop {
+                currIndex <- currIndex + 1;
+                if comparator.compareTo(obj, list.hd()) = 1 then obj <- obj else {
                     obj <- list.hd();
                     index <- currIndex;
                 } fi;
@@ -167,11 +191,13 @@ class Cons inherits List {
         oldList : List <- self,
         index : Int in {
             while not oldList.isNil() loop {
-                index <- oldList.getMinIndex(comparator);
+                -- index <- oldList.getMinIndex(comparator);
+                if method = "ascendent" then index <- oldList.getMinIndex(comparator) else
+                                            index <- oldList.getMaxIndex(comparator) fi;
                 sortedList <- sortedList.add(oldList.get(index));
                 oldList <- oldList.remove(index);
             } pool;
-            if method = "ascendent" then sortedList.reverse() else sortedList fi;
+            sortedList;
         };
     }};
 };
