@@ -25,12 +25,7 @@ class List {
         self;
     }};
 
-    getMinIndex(comparator: Comparator) : Int {{
-        abort();
-        0;
-    }};
-
-    getMaxIndex(comparator: Comparator) : Int {{
+    getIndex(comparator: Comparator, method : String) : Int {{
         abort();
         0;
     }};
@@ -148,7 +143,7 @@ class Cons inherits List {
         if f.filter(hd) then tl.filterBy(f).add(hd) else tl.filterBy(f) fi
     };
 
-    getMinIndex(comparator : Comparator) : Int {{
+    getIndex(comparator : Comparator, method: String) : Int {{
         let index : Int <- 1,
             obj : Object <- self.hd(),
             list : List <- self,
@@ -157,29 +152,17 @@ class Cons inherits List {
             list <- list.tl();
             while not list.isNil() loop {
                 currIndex <- currIndex + 1;
-                if comparator.compareTo(obj, list.hd()) = 2 then obj <- obj else {
-                    obj <- list.hd();
-                    index <- currIndex;
-                } fi;
-                list <- list.tl();
-            } pool;
-            index;
-        };
-    }};
 
-    getMaxIndex(comparator : Comparator) : Int {{
-        let index : Int <- 1,
-            obj : Object <- self.hd(),
-            list : List <- self,
-            currIndex : Int <- 1 in {
-            
-            list <- list.tl();
-            while not list.isNil() loop {
-                currIndex <- currIndex + 1;
-                if comparator.compareTo(obj, list.hd()) = 1 then obj <- obj else {
+                if method = "max" then { -- get max element index
+                    if comparator.compareTo(obj, list.hd()) = 1 then obj <- obj else {
+                        obj <- list.hd();
+                        index <- currIndex;
+                    } fi; } else { -- get min element index
+                    if comparator.compareTo(obj, list.hd()) = 2 then obj <- obj else {
                     obj <- list.hd();
                     index <- currIndex;
-                } fi;
+                    } fi;
+                } fi; 
                 list <- list.tl();
             } pool;
             index;
@@ -191,9 +174,8 @@ class Cons inherits List {
         oldList : List <- self,
         index : Int in {
             while not oldList.isNil() loop {
-                -- index <- oldList.getMinIndex(comparator);
-                if method = "ascendent" then index <- oldList.getMinIndex(comparator) else
-                                            index <- oldList.getMaxIndex(comparator) fi;
+                if method = "ascendent" then index <- oldList.getIndex(comparator, "min") else
+                                            index <- oldList.getIndex(comparator, "max") fi;
                 sortedList <- sortedList.add(oldList.get(index));
                 oldList <- oldList.remove(index);
             } pool;

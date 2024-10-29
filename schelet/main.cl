@@ -48,12 +48,13 @@ class Main inherits IO{
                 l : List => {str <- str.concat("[ ").concat(l.toString()).concat(" ]\n"); };
                 esac;
                 str;
-            } else { -- print all lists
+            } else { 
+                -- print all lists
                 ls <- lists;
                 while not ls.isNil() loop {
                     i <- i + 1;
                     case ls.hd() of
-                    l : List => str <- str.concat(new A2I.i2a(i)).concat(". [ ").concat(l.toString().concat(" ]\n"));
+                    l : List => str <- str.concat(new A2I.i2a(i)).concat(": [ ").concat(l.toString().concat(" ]\n"));
                     esac;
                     ls <- ls.tl();
                 } pool;
@@ -78,7 +79,8 @@ class Main inherits IO{
                 newList <- list.filterBy(f); }; 
             esac;
 
-            lists <- lists.replace(index, newList);
+            -- replace with filtered list
+            lists.replace(index, newList);
         };
     }};
 
@@ -94,12 +96,11 @@ class Main inherits IO{
 
             -- sort list
             case newList of
-            list : Cons => {
-                if method = "descendent" then newList <- list.sortBy(comparator, method).sortBy(comparator, method) else newList <- list.sortBy(comparator, method) fi;
-                };
+            list : Cons => { newList <- list.sortBy(comparator, method); };
             esac;
 
-            lists <- lists.replace(index, newList);
+            -- replace with sorted list
+            lists.replace(index, newList);
         };
     }};
 

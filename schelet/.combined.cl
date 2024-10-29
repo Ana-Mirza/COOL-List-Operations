@@ -25,7 +25,12 @@ class List {
         self;
     }};
 
-    getMinIndex(comparator: Comparator) : Int {{
+    -- getMinIndex(comparator: Comparator) : Int {{
+    --     abort();
+    --     0;
+    -- }};
+
+    getIndex(comparator: Comparator, method : String) : Int {{
         abort();
         0;
     }};
@@ -86,9 +91,10 @@ class Cons inherits List {
         let str : String <- "" in 
         {
             case hd of
-            int : Int => str <- "Int(".concat("int").concat(")");
+            int : Int => str <- "Int(".concat(new A2I.i2a(int)).concat(")");
             string : String => str <- "String(".concat(string).concat(")");
             bool : Bool => { str <- "Bool("; if bool then str <- str.concat("true") else str <- str.concat("false") fi; str <- str.concat(")"); };
+            io : IO => str <- "IO()";
             product : Product => str <- product.toString();
             rank : Rank => str <- rank.toString();
             esac;
@@ -142,7 +148,26 @@ class Cons inherits List {
         if f.filter(hd) then tl.filterBy(f).add(hd) else tl.filterBy(f) fi
     };
 
-    getMinIndex(comparator : Comparator) : Int {{
+    -- getMinIndex(comparator : Comparator) : Int {{
+    --     let index : Int <- 1,
+    --         obj : Object <- self.hd(),
+    --         list : List <- self,
+    --         currIndex : Int <- 1 in {
+            
+    --         list <- list.tl();
+    --         while not list.isNil() loop {
+    --             currIndex <- currIndex + 1;
+    --             if comparator.compareTo(obj, list.hd()) = 2 then obj <- obj else {
+    --                 obj <- list.hd();
+    --                 index <- currIndex;
+    --             } fi;
+    --             list <- list.tl();
+    --         } pool;
+    --         index;
+    --     };
+    -- }};
+
+    getIndex(comparator : Comparator, method: String) : Int {{
         let index : Int <- 1,
             obj : Object <- self.hd(),
             list : List <- self,
@@ -151,10 +176,17 @@ class Cons inherits List {
             list <- list.tl();
             while not list.isNil() loop {
                 currIndex <- currIndex + 1;
-                if comparator.compareTo(obj, list.hd()) = 0 then obj <- obj else {
+
+                if method = "max" then { -- get max element index
+                    if comparator.compareTo(obj, list.hd()) = 1 then obj <- obj else {
+                        obj <- list.hd();
+                        index <- currIndex;
+                    } fi; } else { -- get min element index
+                    if comparator.compareTo(obj, list.hd()) = 2 then obj <- obj else {
                     obj <- list.hd();
                     index <- currIndex;
-                } fi;
+                    } fi;
+                } fi; 
                 list <- list.tl();
             } pool;
             index;
@@ -166,11 +198,12 @@ class Cons inherits List {
         oldList : List <- self,
         index : Int in {
             while not oldList.isNil() loop {
-                index <- oldList.getMinIndex(comparator);
+                if method = "ascendent" then index <- oldList.getIndex(comparator, "min") else
+                                            index <- oldList.getIndex(comparator, "max") fi;
                 sortedList <- sortedList.add(oldList.get(index));
                 oldList <- oldList.remove(index);
             } pool;
-            if method = "ascendent" then sortedList.reverse() else sortedList fi;
+            sortedList;
         };
     }};
 };
@@ -224,12 +257,13 @@ class Main inherits IO{
                 l : List => {str <- str.concat("[ ").concat(l.toString()).concat(" ]\n"); };
                 esac;
                 str;
-            } else { -- print all lists
+            } else { 
+                -- print all lists
                 ls <- lists;
                 while not ls.isNil() loop {
                     i <- i + 1;
                     case ls.hd() of
-                    l : List => str <- str.concat(new A2I.i2a(i)).concat(". [ ").concat(l.toString().concat(" ]\n"));
+                    l : List => str <- str.concat(new A2I.i2a(i)).concat(": [ ").concat(l.toString().concat(" ]\n"));
                     esac;
                     ls <- ls.tl();
                 } pool;
@@ -254,7 +288,8 @@ class Main inherits IO{
                 newList <- list.filterBy(f); }; 
             esac;
 
-            lists <- lists.replace(index, newList);
+            -- replace with filtered list
+            lists.replace(index, newList);
         };
     }};
 
@@ -270,19 +305,17 @@ class Main inherits IO{
 
             -- sort list
             case newList of
-            list : Cons => {
-                if method = "descendent" then newList <- list.sortBy(comparator, method).sortBy(comparator, method) else newList <- list.sortBy(comparator, method) fi;
-                };
+            list : Cons => { newList <- list.sortBy(comparator, method); };
             esac;
 
-            lists <- lists.replace(index, newList);
+            -- replace with sorted list
+            lists.replace(index, newList);
         };
     }};
 
     main():Object {{
         lists <- lists.append(self.load());
         while looping loop {
-            -- out_string("Enter command: ");
             somestr <- in_string();
             if (somestr = "help") then out_string("load print merge filterBy sortBy".concat("\n")) else 
             if (somestr = "load") then lists <- lists.append(self.load()) else
@@ -391,7 +424,7 @@ class Filter {
     filter(o : Object):Bool {true};
 };
 
-(* TODO: implement specified comparators and filters*)
+(* specific comparators and filters *)
 class ProductFilter inherits Filter {
     filter(o : Object):Bool {{
         case o of
@@ -416,7 +449,8 @@ class SamePriceFilter inherits Filter {
             generic_price : Int in {
             -- get prices
             case o of
-            product : Product => { generic_price <- product@Product.getprice(); specific_price <- product.getprice(); };
+            product : Product => { generic_price <- product@Product.getprice();
+                                    specific_price <- product.getprice(); };
             esac;
 
             specific_price = generic_price;
@@ -429,7 +463,8 @@ class PriceComparator inherits Comparator {
         case o1 of
         n1 : Product => {
             case o2 of
-            n2 : Product => if n1.getprice() <= n2.getprice() then 0 else 1 fi;
+            n2 : Product => if n1.getprice() = n2.getprice() then 0 else {
+                if n1.getprice() < n2.getprice() then 1 else 2 fi; } fi;
             esac; };
         n2 : Object => {abort(); 0;};
         esac;
@@ -441,7 +476,8 @@ class RankComparator inherits Comparator {
         case o1 of
         n1 : Rank => {
             case o2 of
-            n2 : Rank => if n1.getRank() <= n2.getRank() then 0 else 1 fi;
+            n2 : Rank => if n1.getRank() = n2.getRank() then 0 else { 
+                if n1.getRank() < n2.getRank() then 1 else 2 fi; } fi;
             esac; };
         n2 : Object => {abort(); 0;}; 
         esac;
@@ -453,12 +489,10 @@ class AlphabeticComparator inherits Comparator {
         case o1 of
         str1 : String => {
             case o2 of
-            str2 : String => { if str1.substr(0, 1) < str2.substr(0, 1) then 0 else {
-                if str2.substr(0, 1) < str1.substr(0, 1) then 1 else {
-                    if str2.substr(0, 1) = str1.substr(0, 1) then {
-                        if str1.length() = 1 then { if str2.length() = 1 then 0 else 0 fi; } else { if str2.length() = 1 then 1 else { self.compareTo(str1.substr(1, str1.length() - 1), str2.substr(1, str2.length() - 1)); } fi; } fi;
-                    } else 1 fi;
-                } fi; } fi;
+            str2 : String => { 
+                if str1 = str2 then 0 else {
+                    if str1 < str2 then 1 else 2 fi;
+                } fi;
             };
             esac;
         };
@@ -532,8 +566,9 @@ class ObjectFactory {
             if type = "String" then obj <- stringTokenizer.nextElem() else
             if type = "Int" then obj <- new A2I.a2i(stringTokenizer.nextElem()) else
             if type = "Bool" then { str <- stringTokenizer.nextElem(); if str = "true" then obj <- true else { if str = "false" then obj <- false else abort() fi; } fi; } else
+            if type = "IO" then obj <- new IO else
             abort()
-            fi fi fi fi fi fi fi fi fi fi fi;
+            fi fi fi fi fi fi fi fi fi fi fi fi;
             self;
         }
     };
@@ -545,7 +580,7 @@ class FilterFactory {
     obj: Filter;
 
     build(type : String): SELF_TYPE {{
-        -- create filter
+        -- create filter object
         let type : String <- type in {
             if type = "ProductFilter" then obj <- new ProductFilter else
             if type = "RankFilter" then obj <- new RankFilter else
@@ -563,7 +598,7 @@ class ComparatorFactory {
     obj: Comparator;
 
     build(type : String): SELF_TYPE {{
-        -- create filter
+        -- create comparator object
         let type : String <- type in {
             if type = "PriceComparator" then obj <- new PriceComparator else
             if type = "RankComparator" then obj <- new RankComparator else
